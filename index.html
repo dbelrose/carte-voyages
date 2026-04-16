@@ -8,11 +8,13 @@
   <!-- Leaflet CSS -->
   <link
     rel="stylesheet"
-    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.cssk
+    href="https://unpkg.com/leaflet@1luster CSS -->
+  <link
     rel="stylesheet"
-    href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css"
-"https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css"
- amily: Arial, sans-serif; }
+    href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster href="https://unpkg.com/leaflet.markerult.css
+
+  <style>
+    body { margin: 0; font-family: Arial, sans-serif; }
     #container { display: flex; height: 100vh; }
     #map { flex: 1; }
 
@@ -35,6 +37,7 @@
     }
   </style>
 </head>
+
 <body>
 
 <div id="container">
@@ -129,3 +132,40 @@
     });
 
     const marker = L.marker([p[1], p[2]], { icon })
+.bindPopup(`<strong>${p[0]}</strong><br>${p[4]} – ${p[3]}`);
+
+    marker.region = p[3];
+    marker.name = p[0];
+
+    markers.push(marker);
+    cluster.addLayer(marker);
+
+    const li = document.createElement("li");
+    li.className = "place-item";
+    li.textContent = p[0];
+    li.onclick = () => {
+      map.setView([p[1], p[2]], 6);
+      marker.openPopup();
+    };
+    document.getElementById("places-list").appendChild(li);
+  });
+
+  map.addLayer(cluster);
+  document.getElementById("counter").textContent =
+    `✅ ${places.length} lieux visités`;
+
+  document.querySelectorAll("input[type=checkbox]").forEach(cb => {
+    cb.addEventListener("change", () => {
+      cluster.clearLayers();
+      markers.forEach(m => {
+        if (document.querySelector(
+          `input[data-region="${m.region}"]`
+        ).checked) {
+          cluster.addLayer(m);
+        }
+      });
+    });
+  });
+</script>
+</body>
+</html>
