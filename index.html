@@ -60,7 +60,7 @@
     <label><input type="checkbox" checked data-region="Afrique"> Afrique</label>
 
     <h3>📍 Lieux visités</h3>
-    <ul id="places-list"></ul>
+    <div id="places-list"></div>
   </div>
 
   <div id="map"></div>
@@ -85,6 +85,22 @@
     "Pacifique": "#2ca02c",
     "Amériques": "#ff7f0e",
     "Afrique": "#d62728"
+  };
+
+  const groupedRegions = {
+    "Polynésie française": [
+      "Bora Bora",
+      "Moorea",
+      "Huahine",
+      "Raiatea",
+      "Maupiti",
+      "Tetiaroa",
+      "Rangiroa",
+      "Fakarava",
+      "Manihi",
+      "Nuku-Hiva",
+      "Rurutu"
+    ]
   };
 
   const regionBounds = {
@@ -176,14 +192,87 @@
     markers.push(marker);
     cluster.addLayer(marker);
 
-    const li = document.createElement("li");
-    li.className = "place-item";
-    li.textContent = p[0];
-    li.onclick = () => {
-      map.setView([p[1], p[2]], 6);
-      marker.openPopup();
-    };
-    document.getElementById("places-list").appendChild(li);
+    const placesContainer = document.getElementById("places-list");
+    const regionGroups = {};
+    const polynesiaGroup = {};
+    
+    // classer les lieux par région
+    places.forEach(p => {
+      const name = p[0];
+      const region = p[3];
+    
+      if (groupedRegions["Polynésie française"].includes(name)) {
+        polynesiaGroup[name] = p;
+      } else {
+        if (!regionGroups[region]) regionGroups[region] = [];
+        regionGroups[region].push(p);
+      }
+    });
+    
+    // ---- Polynésie française (sous-groupe)
+    const polynesiaDetails = document.createElement("details");
+    polynesiaDetails.open =true;
+    
+    const polynesiaSummary = document.createElement("summary");
+    polynesiaSummary.textContent = "Polynésie française";
+    polynesiaSummary.style.cursor = "pointer";
+    polynesiaDetails.appendChild(polynesiaSummary);
+    
+    Object.values(polynesiaGroup).forEach(p => {
+      const div = document.createElement("div");
+      div.textContent = "• " + p[0];
+      div.style.cursor = "pointer";
+      div.onclick = () => {
+        map.setView([p[1], p[2]], 7);
+      };
+      polynesiaDetails.appendChild(div);
+    });
+    
+    // ---- Région Pacifique
+    const pacificDetails = document.createElement("details");
+    pacificDetails.open =true;
+    const pacificSummary = document.createElement("summary");
+    pacificSummary.textContent = "Pacifique";
+    pacificDetails.appendChild(pacificSummary);
+    pacificDetails.appendChild(polynesiaDetails);
+    
+    regionGroups["Pacifique"].forEach(p => {
+      if (!groupedRegions["Polynésie française"].includes(p[0])) {
+        const div = document.createElement("div");
+        div.textContent = "• " + p[0];
+        div.style.cursor = "pointer";
+        div.onclick = () => {
+          map.setView([p[1], p[2]], 6);
+        };
+        pacificDetails.appendChild(div);
+      }
+    });
+    
+    placesContainer.appendChild(pacificDetails);
+    
+    // ---- Autres régions simples
+    ["Europe", "Amériques", "Afrique"].forEach(region => {
+      const details = document.createElement("details");
+      details.open =false;
+    
+      const summary = document.createElement("summary");
+      summary.textContent = region;
+      summary.style.cursor = "pointer";
+      details.appendChild(summary);
+    
+      regionGroups[region]?.forEach(p => {
+        const div = document.createElement("div");
+        div.textContent = "• " + p[0];
+        div.style.cursor = "pointer";
+        div.onclick = () => {
+          map.setView([p[1], p[2]], 6);
+        };
+        details.appendChild(div);
+      });
+    
+      placesContainer.appendChild(details);
+    });
+
   });
 
   map.addLayer(cluster);
