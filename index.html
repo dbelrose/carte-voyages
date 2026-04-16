@@ -73,45 +73,43 @@
 <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
 
 <script>
-  const map = L.map('map').setView([5, -30], 2);
+  /* =========================
+     Initialisation de la carte
+  ========================== */
+  const map = L.map("map").setView([5, -30], 2);
 
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
     maxZoom: 18,
-    attribution: '© OpenStreetMap'
+    attribution: "© OpenStreetMap"
   }).addTo(map);
 
+  /* =========================
+     Configurations
+  ========================== */
   const colors = {
-    "Europe": "#1f77b4",
-    "Pacifique": "#2ca02c",
-    "Amériques": "#ff7f0e",
-    "Afrique": "#d62728"
-  };
-
-  const groupedRegions = {
-    "Polynésie française": [
-      "Bora Bora",
-      "Moorea",
-      "Huahine",
-      "Raiatea",
-      "Maupiti",
-      "Tetiaroa",
-      "Rangiroa",
-      "Fakarava",
-      "Manihi",
-      "Nuku-Hiva",
-      "Rurutu"
-    ]
+    Europe: "#1f77b4",
+    Pacifique: "#2ca02c",
+    Amériques: "#ff7f0e",
+    Afrique: "#d62728"
   };
 
   const regionBounds = {
-    "Europe": [[35, -10], [60, 30]],
-    "Afrique": [[-30, -20], [40, 60]],
-    "Amériques": [[-60, -140], [60, -30]],
-    "Pacifique": [[-40, -180], [20, 180]]
+    Europe: [[35, -10], [60, 30]],
+    Afrique: [[-30, -20], [40, 60]],
+    Amériques: [[-60, -140], [60, -30]],
+    Pacifique: [[-40, -180], [20, 180]]
   };
 
+  const polynesieFr = [
+    "Bora Bora", "Moorea", "Huahine", "Raiatea", "Maupiti",
+    "Tetiaroa", "Rangiroa", "Fakarava", "Manihi",
+    "Nuku-Hiva", "Rurutu"
+  ];
+
+  /* =========================
+     Données
+  ========================== */
   const places = [
-    // Europe
     ["France", 46.2, 2.2, "Europe", "Pays"],
     ["Suisse", 46.8, 8.3, "Europe", "Pays"],
     ["Belgique", 50.85, 4.35, "Europe", "Pays"],
@@ -121,13 +119,11 @@
     ["Grèce", 39.0, 22.0, "Europe", "Pays"],
     ["Angleterre", 52.3, -1.5, "Europe", "Pays"],
 
-    // Afrique / Océan Indien
     ["Tunisie", 33.9, 9.5, "Afrique", "Pays"],
     ["Tchad", 15.4, 18.7, "Afrique", "Pays"],
     ["Réunion", -21.1, 55.5, "Afrique", "Île"],
     ["Madagascar", -18.7, 46.9, "Afrique", "Pays"],
 
-    // Amériques
     ["Canada", 56.1, -106.3, "Amériques", "Pays"],
     ["Los Angeles", 34.05, -118.25, "Amériques", "Ville"],
     ["San Francisco", 37.77, -122.42, "Amériques", "Ville"],
@@ -137,176 +133,100 @@
     ["La Désirade", 16.32, -61.06, "Amériques", "Île"],
     ["Martinique", 14.64, -61.02, "Amériques", "Île"],
 
-    // Pacifique
     ["Moorea", -17.54, -149.83, "Pacifique", "Île"],
     ["Huahine", -16.73, -151.02, "Pacifique", "Île"],
     ["Bora Bora", -16.50, -151.74, "Pacifique", "Île"],
     ["Raiatea", -16.82, -151.44, "Pacifique", "Île"],
     ["Maupiti", -16.43, -152.25, "Pacifique", "Île"],
     ["Tetiaroa", -17.0, -149.58, "Pacifique", "Île"],
-    ["Rangiroa", -14.30, -147.68, "Pacifique", "Île"],
+    ["Rangiroa", -14.3, -147.68, "Pacifique", "Île"],
     ["Fakarava", -16.05, -145.63, "Pacifique", "Île"],
     ["Manihi", -14.43, -146.03, "Pacifique", "Île"],
-    ["Nuku-Hiva", -8.87, -140.10, "Pacifique", "Île"],
+    ["Nuku-Hiva", -8.87, -140.1, "Pacifique", "Île"],
     ["Rurutu", -22.45, -151.34, "Pacifique", "Île"],
     ["Aitutaki", -18.85, -159.76, "Pacifique", "Île"],
     ["Nouvelle-Calédonie", -20.9, 165.6, "Pacifique", "Pays"],
     ["Sydney", -33.87, 151.21, "Pacifique", "Ville"]
   ];
 
+  /* =========================
+     Icônes
+  ========================== */
+  const typeIcons = {
+    Ville: c => L.divIcon({ html: `<svg fill="${c}" width="16" height="16"><rect x="4" y="2" width="16" height="20"/></svg>`, className: "" }),
+    Pays: c => L.divIcon({ html: `<svg fill="${c}" width="16" height="16"><path d="M4 2h2v20H4zM6 2l14 4-14 4z"/></svg>`, className: "" }),
+    Île: c => L.divIcon({ html: `<svg fill="${c}" width="16" height="16"><path d="M12 4c4 4 6 7 8 10H4c2-3 4-6 8-10z"/></svg>`, className: "" })
+  };
+
+  /* =========================
+     Marqueurs
+  ========================== */
   const cluster = L.markerClusterGroup();
   const markers = [];
-  
-  const typeIcons = {
-    "Ville": (color) => L.divIcon({
-      html: `<svg width="16" height="16" viewBox="0 0 24 24" fill="${color}">
-               <rect x="4" y="2" width="16" height="20"></rect>
-             </svg>`,
-      className: ""
-    }),
-  
-    "Pays": (color) => L.divIcon({
-      html: `<svg width="16" height="16" viewBox="0 0 24 24" fill="${color}">
-               <path d="M4 2h2v20H4zM6 2l14 4-14 4z"/>
-             </svg>`,
-      className: ""
-    }),
-  
-    "Île": (color) => L.divIcon({
-      html: `<svg width="16" height="16" viewBox="0 0 24 24" fill="${color}">
-               <path d="M12 4c4 4 6 7 8 10H4c2-3 4-6 8-10z"/>
-             </svg>`,
-      className: ""
-    })
-  };
-  
+
   places.forEach(p => {
-    const icon = typeIcons[p[4]](colors[p[3]]);
-    
-    const marker = L.marker([p[1], p[2]], { icon })
-.bindPopup(`<strong>${p[0]}</strong><br>${p[4]} – ${p[3]}`);
+    const marker = L.marker([p[1], p[2]], {
+      icon: typeIcons[p[4]](colors[p[3]])
+    }).bindPopup(`<strong>${p[0]}</strong><br>${p[4]} – ${p[3]}`);
 
     marker.region = p[3];
-    marker.name = p[0];
-
     markers.push(marker);
     cluster.addLayer(marker);
-
-    const placesContainer = document.getElementById("places-list");
-    const regionGroups = {};
-    const polynesiaGroup = {};
-    
-    // classer les lieux par région
-    places.forEach(p => {
-      const name = p[0];
-      const region = p[3];
-    
-      if (groupedRegions["Polynésie française"].includes(name)) {
-        polynesiaGroup[name] = p;
-      } else {
-        if (!regionGroups[region]) regionGroups[region] = [];
-        regionGroups[region].push(p);
-      }
-    });
-    
-    // ---- Polynésie française (sous-groupe)
-    const polynesiaDetails = document.createElement("details");
-    polynesiaDetails.open =true;
-    
-    const polynesiaSummary = document.createElement("summary");
-    polynesiaSummary.textContent = "Polynésie française";
-    polynesiaSummary.style.cursor = "pointer";
-    polynesiaDetails.appendChild(polynesiaSummary);
-    
-    Object.values(polynesiaGroup).forEach(p => {
-      const div = document.createElement("div");
-      div.textContent = "• " + p[0];
-      div.style.cursor = "pointer";
-      div.onclick = () => {
-        map.setView([p[1], p[2]], 7);
-      };
-      polynesiaDetails.appendChild(div);
-    });
-    
-    // ---- Région Pacifique
-    const pacificDetails = document.createElement("details");
-    pacificDetails.open =true;
-    const pacificSummary = document.createElement("summary");
-    pacificSummary.textContent = "Pacifique";
-    pacificDetails.appendChild(pacificSummary);
-    pacificDetails.appendChild(polynesiaDetails);
-    
-    regionGroups["Pacifique"].forEach(p => {
-      if (!groupedRegions["Polynésie française"].includes(p[0])) {
-        const div = document.createElement("div");
-        div.textContent = "• " + p[0];
-        div.style.cursor = "pointer";
-        div.onclick = () => {
-          map.setView([p[1], p[2]], 6);
-        };
-        pacificDetails.appendChild(div);
-      }
-    });
-    
-    placesContainer.appendChild(pacificDetails);
-    
-    // ---- Autres régions simples
-    ["Europe", "Amériques", "Afrique"].forEach(region => {
-      const details = document.createElement("details");
-      details.open =false;
-    
-      const summary = document.createElement("summary");
-      summary.textContent = region;
-      summary.style.cursor = "pointer";
-      details.appendChild(summary);
-    
-      regionGroups[region]?.forEach(p => {
-        const div = document.createElement("div");
-        div.textContent = "• " + p[0];
-        div.style.cursor = "pointer";
-        div.onclick = () => {
-          map.setView([p[1], p[2]], 6);
-        };
-        details.appendChild(div);
-      });
-    
-      placesContainer.appendChild(details);
-    });
-
   });
 
   map.addLayer(cluster);
+
+  /* =========================
+     Menu Lieux visités (UNE FOIS)
+  ========================== */
+  function buildPlacesMenu() {
+    const container = document.getElementById("places-list");
+    container.innerHTML = "";
+
+    const pacifique = document.createElement("details");
+    pacifique.open = true;
+    pacifique.appendChild(Object.assign(document.createElement("summary"), { textContent: "Pacifique" }));
+
+    const pf = document.createElement("details");
+    pf.open = true;
+    pf.appendChild(Object.assign(document.createElement("summary"), { textContent: "Polynésie française" }));
+
+    places.forEach(p => {
+      const item = document.createElement("div");
+      item.textContent = "• " + p[0];
+      item.style.cursor = "pointer";
+      item.onclick = () => map.setView([p[1], p[2]], 6);
+
+      if (polynesieFr.includes(p[0])) {
+        pf.appendChild(item);
+      } else if (p[3] === "Pacifique") {
+        pacifique.appendChild(item);
+      }
+    });
+
+    pacifique.appendChild(pf);
+    container.appendChild(pacifique);
+
+    ["Europe", "Amériques", "Afrique"].forEach(r => {
+      const d = document.createElement("details");
+      d.appendChild(Object.assign(document.createElement("summary"), { textContent: r }));
+
+      places.filter(p => p[3] === r).forEach(p => {
+        const item = document.createElement("div");
+        item.textContent = "• " + p[0];
+        item.style.cursor = "pointer";
+        item.onclick = () => map.setView([p[1], p[2]], 6);
+        d.appendChild(item);
+      });
+
+      container.appendChild(d);
+    });
+  }
+
+  buildPlacesMenu();
+
   document.getElementById("counter").textContent =
     `✅ ${places.length} lieux visités`;
-
-  document.querySelectorAll("input[type=checkbox]").forEach(cb => {
-    cb.addEventListener("change", () => {
-  
-      cluster.clearLayers();
-  
-      // pour savoir quelles régions sont actives
-      const activeRegions = [];
-  
-      document.querySelectorAll("input[type=checkbox]").forEach(box => {
-        if (box.checked) {
-          activeRegions.push(box.dataset.region);
-  
-          markers.forEach(m => {
-            if (m.region === box.dataset.region) {
-              cluster.addLayer(m);
-            }
-          });
-        }
-      });
-  
-      // zoom automatique s'il y a au moins une région sélectionnée
-      if (activeRegions.length === 1) {
-        map.fitBounds(regionBounds[activeRegions[0]]);
-      }
-  
-    });
-  });
-  
 </script>
 </body>
 </html>
