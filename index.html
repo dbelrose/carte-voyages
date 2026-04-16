@@ -133,13 +133,33 @@
 
   const cluster = L.markerClusterGroup();
   const markers = [];
-
-  places.forEach(p => {
-    const icon = L.divIcon({
-      html: `<div style="background:${colors[p[3]]};width:12px;height:12px;border-radius:50%"></div>`,
+  
+  const typeIcons = {
+    "Ville": (color) => L.divIcon({
+      html: `<svg width="16" height="16" viewBox="0 0 24 24" fill="${color}">
+               <rect x="4" y="2" width="16" height="20"></rect>
+             </svg>`,
       className: ""
-    });
-
+    }),
+  
+    "Pays": (color) => L.divIcon({
+      html: `<svg width="16" height="16" viewBox="0 0 24 24" fill="${color}">
+               <path d="M4 2h2v20H4zM6 2l14 4-14 4z"/>
+             </svg>`,
+      className: ""
+    }),
+  
+    "Île": (color) => L.divIcon({
+      html: `<svg width="16" height="16" viewBox="0 0 24 24" fill="${color}">
+               <path d="M12 4c4 4 6 7 8 10H4c2-3 4-6 8-10z"/>
+             </svg>`,
+      className: ""
+    })
+  };
+  
+  places.forEach(p => {
+    const icon = typeIcons[p[4]](colors[p[3]]);
+    
     const marker = L.marker([p[1], p[2]], { icon })
 .bindPopup(`<strong>${p[0]}</strong><br>${p[4]} – ${p[3]}`);
 
