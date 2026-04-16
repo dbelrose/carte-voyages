@@ -1,0 +1,86 @@
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <title>Carte interactive – Voyages (clusters)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
+
+  <style>
+    body { margin: 0; }
+    #map { width: 100%; height: 100vh; }
+  </style>
+</head>
+<body>
+<div id="map"></div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+<script>
+  const map = L.map('map').setView([5, -30], 2);
+
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 18,
+    attribution: '© OpenStreetMap'
+  }).addTo(map);
+
+  const markers = L.markerClusterGroup();
+
+  const places = [
+    // Europe & Afrique
+    ['France', 46.2, 2.2],
+    ['Suisse', 46.8, 8.3],
+    ['Allemagne', 51.0, 10.0],
+    ['Espagne', 40.4, -3.7],
+    ['Grèce', 39.0, 22.0],
+    ['Angleterre', 52.3, -1.5],
+    ['Luxembourg', 49.8, 6.1],
+    ['Tunisie', 33.9, 9.5],
+    ['Tchad', 15.4, 18.7],
+
+    // Amériques
+    ['Canada', 56.1, -106.3],
+    ['Los Angeles', 34.05, -118.25],
+    ['San Francisco', 37.77, -122.42],
+    ['Miami', 25.76, -80.19],
+    ['Guadeloupe', 16.25, -61.58],
+    ['Les Saintes', 15.86, -61.58],
+    ['La Désirade', 16.32, -61.06],
+    ['Martinique', 14.64, -61.02],
+
+    // Océan Indien
+    ['Réunion', -21.1, 55.5],
+    ['Madagascar', -18.7, 46.9],
+
+    // Pacifique – Polynésie française
+    ['Tahiti (repère)', -17.65, -149.43],
+    ['Moorea', -17.54, -149.83],
+    ['Huahine', -16.73, -151.02],
+    ['Bora Bora', -16.50, -151.74],
+    ['Raiatea', -16.82, -151.44],
+    ['Maupiti', -16.43, -152.25],
+    ['Tetiaroa', -17.0, -149.58],
+    ['Rangiroa', -14.30, -147.68],
+    ['Fakarava', -16.05, -145.63],
+    ['Manihi', -14.43, -146.03],
+    ['Nuku-Hiva', -8.87, -140.10],
+    ['Rurutu', -22.45, -151.34],
+
+    // Pacifique hors PF
+    ['Aitutaki (Îles Cook)', -18.85, -159.76],
+    ['Nouvelle-Calédonie', -20.9, 165.6]
+  ];
+
+  places.forEach(p => {
+    const marker = L.marker([p[1], p[2]]).bindPopup(`<strong>${p[0]}</strong>`);
+    markers.addLayer(marker);
+  });
+
+  map.addLayer(markers);
+</script>
+</body>
+</html>
