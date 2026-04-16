@@ -227,6 +227,39 @@
 
   document.getElementById("counter").textContent =
     `✅ ${places.length} lieux visités`;
+
+/* =========================
+     Filtres + zoom automatique
+  ========================= */
+  document
+    .querySelectorAll('input[type="checkbox"]')
+    .forEach(checkbox => {
+      checkbox.addEventListener("change", () => {
+        cluster.clearLayers();
+  
+        const activeRegions = [];
+  
+        document
+          .querySelectorAll('input[type="checkbox"]')
+          .forEach(box => {
+            if (box.checked) {
+              activeRegions.push(box.dataset.region);
+  
+              markers.forEach(marker => {
+                if (marker.region === box.dataset.region) {
+                  cluster.addLayer(marker);
+                }
+              });
+            }
+          });
+  
+        // ✅ Zoom automatique uniquement si une seule région est sélectionnée
+        if (activeRegions.length === 1) {
+          map.fitBounds(regionBounds[activeRegions[0]]);
+        }
+      });
+    });
+  
 </script>
 </body>
 </html>
