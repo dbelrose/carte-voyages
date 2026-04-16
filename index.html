@@ -87,6 +87,13 @@
     "Afrique": "#d62728"
   };
 
+  const regionBounds = {
+    "Europe": [[35, -10], [60, 30]],
+    "Afrique": [[-30, -20], [40, 60]],
+    "Amériques": [[-60, -140], [60, -30]],
+    "Pacifique": [[-40, -180], [20, 180]]
+  };
+
   const places = [
     // Europe
     ["France", 46.2, 2.2, "Europe", "Pays"],
@@ -185,16 +192,32 @@
 
   document.querySelectorAll("input[type=checkbox]").forEach(cb => {
     cb.addEventListener("change", () => {
+  
       cluster.clearLayers();
-      markers.forEach(m => {
-        if (document.querySelector(
-          `input[data-region="${m.region}"]`
-        ).checked) {
-          cluster.addLayer(m);
+  
+      // pour savoir quelles régions sont actives
+      const activeRegions = [];
+  
+      document.querySelectorAll("input[type=checkbox]").forEach(box => {
+        if (box.checked) {
+          activeRegions.push(box.dataset.region);
+  
+          markers.forEach(m => {
+            if (m.region === box.dataset.region) {
+              cluster.addLayer(m);
+            }
+          });
         }
       });
+  
+      // zoom automatique s'il y a au moins une région sélectionnée
+      if (activeRegions.length === 1) {
+        map.fitBounds(regionBounds[activeRegions[0]]);
+      }
+  
     });
   });
+  
 </script>
 </body>
 </html>
