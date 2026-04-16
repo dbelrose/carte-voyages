@@ -1,25 +1,66 @@
-
 <!DOCTYPE html>
 <html lang="fr">
 <head>
   <meta charset="utf-8" />
-  <title>Carte interactive – Voyages (clusters)</title>
+  <title>Carte de vie – Voyages</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+  <!-- Leaflet -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
 
   <style>
-    body { margin: 0; }
-    #map { width: 100%; height: 100vh; }
+    body { margin: 0; font-family: Arial, sans-serif; }
+    #container { display: flex; height: 100vh; }
+    #map { flex: 1; }
+
+    #sidebar {
+      width: 300px;
+      padding: 12px;
+      background: #f8f8f8;
+      overflow-y: auto;
+      border-right: 1px solid #ddd;
+    }
+
+    h2 { margin-top: 0; }
+    .region-europe { color: #1f77b4; }
+    .region-pacifique { color: #2ca02c; }
+    .region-ameriques { color: #ff7f0e; }
+    .region-afrique { color: #d62728; }
+
+    .place-item {
+      cursor: pointer;
+      padding: 4px 0;
+    }
+    .place-item:hover {
+      text-decoration: underline;
+    }
   </style>
 </head>
 <body>
-<div id="map"></div>
+
+<div id="container">
+  <div id="sidebar">
+    <h2>🌍 Carte de vie</h2>
+    <p><strong id="counter"></strong></p>
+
+    <h3>Filtres</h3>
+    <label><input type="checkbox" checked data-region="Europe"> Europe</label><br>
+    <label><input type="checkbox" checked data-region="Pacifique"> Pacifique</label><br>
+    <label><input type="checkbox" checked data-region="Amériques"> Amériques</label><br>
+    <label><input type="checkbox" checked data-region="Afrique"> Afrique</label>
+
+    <h3>📍 Lieux visités</h3>
+    <ul id="places-list"></ul>
+  </div>
+
+  <div id="map"></div>
+</div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+
 <script>
   const map = L.map('map').setView([5, -30], 2);
 
@@ -28,60 +69,63 @@
     attribution: '© OpenStreetMap'
   }).addTo(map);
 
-  const markers = L.markerClusterGroup();
+  const colors = {
+    "Europe": "#1f77b4",
+    "Pacifique": "#2ca02c",
+    "Amériques": "#ff7f0e",
+    "Afrique": "#d62728"
+  };
 
   const places = [
-    // Europe & Afrique
-    ['France', 46.2, 2.2],
-    ['Suisse', 46.8, 8.3],
-    ['Allemagne', 51.0, 10.0],
-    ['Espagne', 40.4, -3.7],
-    ['Grèce', 39.0, 22.0],
-    ['Angleterre', 52.3, -1.5],
-    ['Belgique', 50.85, 4.35],
-    ['Luxembourg', 49.8, 6.1],
-    ['Tunisie', 33.9, 9.5],
-    ['Tchad', 15.4, 18.7],
+    // Europe
+    ["France", 46.2, 2.2, "Europe", "Pays"],
+    ["Suisse", 46.8, 8.3, "Europe", "Pays"],
+    ["Belgique", 50.85, 4.35, "Europe", "Pays"],
+    ["Luxembourg", 49.8, 6.1, "Europe", "Pays"],
+    ["Allemagne", 51.0, 10.0, "Europe", "Pays"],
+    ["Espagne", 40.4, -3.7, "Europe", "Pays"],
+    ["Grèce", 39.0, 22.0, "Europe", "Pays"],
+    ["Angleterre", 52.3, -1.5, "Europe", "Pays"],
+
+    // Afrique / Océan Indien
+    ["Tunisie", 33.9, 9.5, "Afrique", "Pays"],
+    ["Tchad", 15.4, 18.7, "Afrique", "Pays"],
+    ["Réunion", -21.1, 55.5, "Afrique", "Île"],
+    ["Madagascar", -18.7, 46.9, "Afrique", "Pays"],
 
     // Amériques
-    ['Canada', 56.1, -106.3],
-    ['Los Angeles', 34.05, -118.25],
-    ['San Francisco', 37.77, -122.42],
-    ['Miami', 25.76, -80.19],
-    ['Guadeloupe', 16.25, -61.58],
-    ['Les Saintes', 15.86, -61.58],
-    ['La Désirade', 16.32, -61.06],
-    ['Martinique', 14.64, -61.02],
+    ["Canada", 56.1, -106.3, "Amériques", "Pays"],
+    ["Los Angeles", 34.05, -118.25, "Amériques", "Ville"],
+    ["San Francisco", 37.77, -122.42, "Amériques", "Ville"],
+    ["Miami", 25.76, -80.19, "Amériques", "Ville"],
+    ["Guadeloupe", 16.25, -61.58, "Amériques", "Île"],
+    ["Les Saintes", 15.86, -61.58, "Amériques", "Île"],
+    ["La Désirade", 16.32, -61.06, "Amériques", "Île"],
+    ["Martinique", 14.64, -61.02, "Amériques", "Île"],
 
-    // Océan Indien
-    ['Réunion', -21.1, 55.5],
-    ['Madagascar', -18.7, 46.9],
-
-    // Pacifique – Polynésie française
-    ['Tahiti (repère)', -17.65, -149.43],
-    ['Moorea', -17.54, -149.83],
-    ['Huahine', -16.73, -151.02],
-    ['Bora Bora', -16.50, -151.74],
-    ['Raiatea', -16.82, -151.44],
-    ['Maupiti', -16.43, -152.25],
-    ['Tetiaroa', -17.0, -149.58],
-    ['Rangiroa', -14.30, -147.68],
-    ['Fakarava', -16.05, -145.63],
-    ['Manihi', -14.43, -146.03],
-    ['Nuku-Hiva', -8.87, -140.10],
-    ['Rurutu', -22.45, -151.34],
-
-    // Pacifique hors PF
-    ['Aitutaki (Îles Cook)', -18.85, -159.76],
-    ['Nouvelle-Calédonie', -20.9, 165.6]
+    // Pacifique
+    ["Moorea", -17.54, -149.83, "Pacifique", "Île"],
+    ["Huahine", -16.73, -151.02, "Pacifique", "Île"],
+    ["Bora Bora", -16.50, -151.74, "Pacifique", "Île"],
+    ["Raiatea", -16.82, -151.44, "Pacifique", "Île"],
+    ["Maupiti", -16.43, -152.25, "Pacifique", "Île"],
+    ["Tetiaroa", -17.0, -149.58, "Pacifique", "Île"],
+    ["Rangiroa", -14.30, -147.68, "Pacifique", "Île"],
+    ["Fakarava", -16.05, -145.63, "Pacifique", "Île"],
+    ["Manihi", -14.43, -146.03, "Pacifique", "Île"],
+    ["Nuku-Hiva", -8.87, -140.10, "Pacifique", "Île"],
+    ["Rurutu", -22.45, -151.34, "Pacifique", "Île"],
+    ["Aitutaki", -18.85, -159.76, "Pacifique", "Île"],
+    ["Nouvelle-Calédonie", -20.9, 165.6, "Pacifique", "Pays"]
   ];
 
-  places.forEach(p => {
-    const marker = L.marker([p[1], p[2]]).bindPopup(`<strong>${p[0]}</strong>`);
-    markers.addLayer(marker);
-  });
+  const cluster = L.markerClusterGroup();
+  const markers = [];
 
-  map.addLayer(markers);
-</script>
-</body>
-</html>
+  places.forEach(p => {
+    const icon = L.divIcon({
+      html: `<div style="background:${colors[p[3]]};width:12px;height:12px;border-radius:50%"></div>`,
+      className: ""
+    });
+
+    const marker = L.marker([p[1], p[2]], { icon })
