@@ -318,7 +318,18 @@
     menuToggle.addEventListener("click", () => {
       sidebar.classList.toggle("open");
     });
-  
+
+  /* =========================
+       OPTION BONUS : fermer le menu mobile après clic sur un lieu
+    ========================= */
+    document
+      .getElementById("places-list")
+      .addEventListener("click", event => {
+        if (event.target.tagName === "DIV") {
+          sidebar.classList.remove("open");
+        }
+      });
+
 </script>
 </body>
 </html>
