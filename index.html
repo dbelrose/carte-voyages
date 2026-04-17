@@ -43,10 +43,58 @@
     .place-item:hover {
       text-decoration: underline;
     }
+
+    /* Bouton menu (mobile) */
+    #menu-toggle {
+      display: none;
+      position: fixed;
+      top: 10px;
+      left: 10px;
+      z-index: 1000;
+      background: white;
+      border: 1px solid #ccc;
+      padding: 8px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    
+    /* Mobile portrait */
+    @media (max-width: 768px) {
+      #container {
+        flex-direction: column;
+      }
+    
+      #sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100vh;
+        width: 80%;
+        max-width: 320px;
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+        z-index: 999;
+      }
+    
+      #sidebar.open {
+        transform: translateX(0);
+      }
+    
+      #map {
+        flex: 1;
+      }
+    
+      #menu-toggle {
+        display: block;
+      }
+    }
+    
   </style>
 </head>
 
 <body>
+
+  <button id="menu-toggle">☰ Lieux visités</button>
 
 <div id="container">
   <div id="sidebar">
@@ -259,6 +307,16 @@
           map.fitBounds(regionBounds[activeRegions[0]]);
         }
       });
+    });
+
+  /* =========================
+       Menu mobile toggle
+    ========================= */
+    const menuToggle = document.getElementById("menu-toggle");
+    const sidebar = document.getElementById("sidebar");
+    
+    menuToggle.addEventListener("click", () => {
+      sidebar.classList.toggle("open");
     });
   
 </script>
